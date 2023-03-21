@@ -36,6 +36,6 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: "/urls/b2xVn2" };
+  const templateVars = { id: req.params.id, longURL: "http://www.lighthouselabs.ca" };
   res.render("urls_show", templateVars);
 });
