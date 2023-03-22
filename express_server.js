@@ -66,4 +66,4 @@ function generateRandomString() {
   }
   return result;
   //generate 6 random chars
-}
+};
