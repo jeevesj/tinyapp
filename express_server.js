@@ -52,6 +52,22 @@ app.post("/urls", (req, res) => {
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
+// app.post("/urls/:id", (req, res) => {
+//   const newLong = req
+//   urlDatabase[id] = newLong;
+//   res.send("Poof");
+// });
+
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const newLongURL = req.body.newLongURL;
+
+  if (urlDatabase[id]) {
+    urlDatabase[id] = newLongURL;
+    res.redirect(`/urls/${id}`); // Redirect to the updated URL's page
+  }
+});
+
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL]
