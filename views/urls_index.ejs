@@ -38,7 +38,8 @@
       </div>
     </nav>
   </header>
-  
+ 
+
   <body>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
@@ -54,6 +55,7 @@
             <tr>
               <td><%= id %></td>
               <td><%= urls[id] %></td>
+              <td><form method="POST" action="/urls/9sm5xK/delete"><button type="submit">Delete</button> </button></form></td>
             </tr>
           <% } %>
         </tbody>
