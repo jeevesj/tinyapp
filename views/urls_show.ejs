@@ -40,7 +40,7 @@
         <p class="card-text">
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
         </p>
-        <form action="/urls/<%= id %>" method="POST">
+        <form action="/urls/<%= id %>/update" method="POST">
           <div class="form-group">
             <label for="newLongURL">EDIT:</label>
             <input
@@ -48,7 +48,8 @@
               class="form-control"
               id="newLongURL"
               name="newLongURL"
-              value="<%= longURL %>"
+              value="<%= longURL %>" size="2"
+              
               required
               />
             </div>
