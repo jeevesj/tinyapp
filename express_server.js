@@ -88,7 +88,7 @@ app.get('/login', (req, res) => {
 app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
-  const password = req.body.email;
+  const password = req.body.password;
   
   const newUser = {
     id,
@@ -108,7 +108,7 @@ app.post("/register", (req, res) => {
   }
 
   users[id] = newUser;
-  
+  console.log(newUser);
   res.cookie("user_id", id);
   res.redirect("/urls"); 
 });
