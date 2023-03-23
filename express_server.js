@@ -88,16 +88,31 @@ app.post("/register", (req, res) => {
     password,
   };
 
+  if (!email || !password) {
+    res.status(400).send('Email and password are required');
+    return;
+  }
+  for (const userID in users) {
+    if (users[userID].email === email) {
+      res.status(400).send('Email already exists');
+      return;
+    }
+  }
+
   users[id] = newUser;
   
   res.cookie("user_id", id);
-
   res.redirect("/urls"); 
 });
 
 function findUser(email, password) {
   //function for locating user in object
-
+  for (const user_id in users) {
+    if (users[user_id].email === email && users[user_id].password === password) {
+      return user_id;
+    }
+  }
+  return null;
 }
 
 
@@ -120,12 +135,12 @@ app.post("/logout", (req, res) => {
 });
 
 
-app.post("/register", (req, res) => {
+// app.post("/register", (req, res) => {
   
-  console.log(req.body);
+//   console.log(req.body);
 
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
-});
+//   res.send("Ok"); // Respond with 'Ok' (we will replace this)
+// });
 
 
 app.post("/urls", (req, res) => {
