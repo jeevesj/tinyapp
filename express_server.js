@@ -60,6 +60,9 @@ app.get("/urls/new", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
   const templateVars = { user: user };
+  // if (user_id === undefined) { // checks cookie and redirects user to /urls if logged in
+  //   res.redirect('/urls');
+  // }
   res.render("urls_new", templateVars);
 });
 
@@ -73,22 +76,23 @@ app.get("/urls/:id/", (req, res) => {
 app.get('/register', (req, res) => {
   const user_id = req.cookies["user_id"]; // Get the user_id from the cookies
   const user = users[user_id]; 
-  const templateVars = { user: user }; 
-  res.render('register', templateVars); 
-  if (user_id) {
+  if (user_id) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/urls');
+  } else {
+  const templateVars = { user: user };
+  res.render('register', templateVars);
   }
 });
 
 app.get('/login', (req, res) => {
   const user_id = req.cookies["user_id"]; // Get the user_id from the cookies
   const user = users[user_id];
-  const templateVars = { user: user };
-  if (user_id) {
+  if (user_id) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/urls');
-  }
+  } else {
+  const templateVars = { user: user };
   res.render('login', templateVars);
-  
+  }
 });
 
 
