@@ -59,11 +59,12 @@ app.get("/hello", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
-  const templateVars = { user: user };
-  // if (user_id === undefined) { // checks cookie and redirects user to /urls if logged in
-  //   res.redirect('/urls');
-  // }
-  res.render("urls_new", templateVars);
+  if (user_id === undefined) { // checks cookie and redirects user to /urls if logged in
+    res.redirect('/login');
+  } else {
+    const templateVars = { user: user };
+    res.render("urls_new", templateVars);
+  }
 });
 
 app.get("/urls/:id/", (req, res) => {
@@ -143,10 +144,17 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  const shortURL = generateRandomString(); // Log the POST request body to the console
-  urlDatabase[shortURL] = req.body.longURL;
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const user_id = req.cookies["user_id"];
+  const user = users[user_id];
+
+  if (!user) {
+    res.status(401).send("<h3>You must be logged in to shorten URLs.</h3>");
+  } else {
+    const shortURL = generateRandomString();
+    const longURL = req.body.longURL;
+    urlDatabase[shortURL] = { longURL: longURL, userID: user_id };
+    res.redirect(`/urls/${shortURL}`);
+  }
 });
 
 app.post("/urls/:id/update", (req, res) => {
@@ -163,7 +171,11 @@ app.post("/urls/:id/update", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
     const longURL = urlDatabase[shortURL]
+    if(!longURL) {
+      res.status(404).send("<h3>Shortened URL does not exist.</h3>");
+    } else {
     res.redirect(longURL);
+    }
   });
   
 app.post("/urls/:id/delete", (req, res) => {
