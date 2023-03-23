@@ -139,7 +139,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 
@@ -178,7 +178,7 @@ app.get("/u/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
     const shortURL = req.params.id;
     delete urlDatabase[shortURL];
-    res.send("Poof");
+    res.redirect("/urls");
 });
 
 function generateRandomString() {
