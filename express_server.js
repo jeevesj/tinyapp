@@ -77,6 +77,14 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
+app.get('/login', (req, res) => {
+  const user_id = req.cookies["user_id"]; // Get the user_id from the cookies
+  const user = users[user_id];
+  const templateVars = { user: user };
+  res.render('login', templateVars);
+});
+
+
 app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;

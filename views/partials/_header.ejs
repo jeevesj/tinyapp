@@ -22,15 +22,25 @@
             <button type="submit" class="btn btn-danger">Logout</button>
           </form>
         <% } else { %>
-          <form action="/login" method="post" class="form-inline">
+          <!-- <form action="/login" method="post" class="form-inline">
             <input
               type="text"
               class="form-control mr-2"
               id="username"
               name="username"
               placeholder="Username"
+              
+
             />
-            <button type="submit" class="btn btn-success">Login</button>
+            <input
+              type="password"
+              class="form-control mr-2"
+              id="password"
+              name="password"
+              placeholder="Password"
+             
+            /> -->
+            <a  href=/login class="btn btn-danger">login</a>
           </form>
         <% } %>
       </div>
