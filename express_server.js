@@ -1,13 +1,17 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require("cookie-parser");
+var cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
-app.use(cookieParser());
 
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: "cookie-name",
+  keys: ['redhot'],
+}));
+
 
 const urlDatabase = {
   b6UTxQ: {
@@ -52,7 +56,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session.user_id;
   const user = users[user_id];
   if (!user) {
     res.status(401).send("<h3>You must be logged in to view.</h3>");
@@ -69,7 +73,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session.user_id;
   const user = users[user_id];
   if (!user) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/login');
@@ -80,7 +84,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id/", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session.user_id;
   const user = users[user_id];
   if (!user) {
     res.status(401).send("<h3>You must be logged in to view</h3>");
@@ -93,7 +97,7 @@ app.get("/urls/:id/", (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  const user_id = req.cookies["user_id"]; // Get the user_id from the cookies
+  const user_id = req.session.user_id; // Get the user_id from the cookies
   const user = users[user_id]; 
   if (user_id) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/urls');
@@ -104,7 +108,7 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  const user_id = req.cookies["user_id"]; // Get the user_id from the cookies
+  const user_id = req.session.user_id; // Get the user_id from the cookies
   const user = users[user_id];
   if (user_id) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/urls');
@@ -140,7 +144,7 @@ app.post("/register", (req, res) => {
 
   users[id] = newUser; // add newUser to object
   console.log(newUser); // print newUser to check
-  res.cookie("user_id", id); // assign user a cookie
+  req.session.user_id = newUser.id; // assign user a cookie
   res.redirect("/urls");  // redirect to url
 });
 
@@ -153,7 +157,7 @@ app.post("/login", (req, res) => {
     return;
   }
   if (bcrypt.compareSync(password, userInfo.password)) { // if user_id == true, login the user
-    res.cookie("user_id", userInfo.id);
+    req.session.user_id = userInfo.id; 
     res.redirect("/urls");
   } else {
     res.status(403).send("Email or password do not match. Please try again."); // error 403
@@ -161,12 +165,12 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id"); // deletes cookie in browser
+  req.session = null; // deletes cookie in browser
   res.redirect("/login"); // redirects to login page after logging out
 });
 
 app.post("/urls", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session.user_id;
   const user = users[user_id];
 
   if (!user) {
@@ -206,7 +210,7 @@ app.get("/u/:id", (req, res) => {
 });
   
 app.post("/urls/:id/delete", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session.user_id;
   const shortURL = req.params.id;
 
   if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
@@ -236,7 +240,6 @@ function findUser(email) {
   }
   return null;
 }
-
 
 function generateRandomString() { //generate 6 random chars
   let result = '';
