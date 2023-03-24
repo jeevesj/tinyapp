@@ -56,7 +56,7 @@ app.get("/urls", (req, res) => {
   if (!user) {
     res.status(401).send("<h3>You must be logged in to view.</h3>");
   } else {
-  const userUrls = getUrlsByUserId(urlDatabase, user_id);
+  const userUrls = urlsforUser(urlDatabase, user_id);
   const templateVars = { urls: userUrls, user: user };
   res.render("urls_index", templateVars);
   }
@@ -81,8 +81,14 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id/", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
-  const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id], user: user};
-  res.render("urls_show", templateVars);
+  if (!user) {
+    res.status(401).send("<h3>You must be logged in to view</h3>");
+  } else if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
+    res.status(403).send("<h3>You do not have permission to view</h3>");
+  } else {
+    const templateVars = { id: shortURL, longURL: urlDatabase[shortURL].longURL, user: user };
+    res.render("urls_show", templateVars);
+  }
 });
 
 app.get('/register', (req, res) => {
@@ -176,43 +182,49 @@ app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   const newLongURL = req.body.newLongURL;
   
-  if (urlDatabase[id]) {
-    urlDatabase[id].longURL = newLongURL;
-    res.redirect(`/urls/${id}`); // Redirect to the updated URL's page
+  if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
+    res.status(403).send("<h3>Only the owner of the URL can edit it.</h3>");
   } else {
-    res.status(404).send("<h3>URL does not exist.</h3>");
+    urlDatabase[shortURL].longURL = newLongURL;
+    res.redirect(`/urls/${shortURL}`);
   }
 });
 
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-    const data = urlDatabase[shortURL]
-    if(!data) {
-      res.status(404).send("<h3>Shortened URL does not exist.</h3>");
-    } else {
+  const data = urlDatabase[shortURL]
+  if(!data) {
+    res.status(404).send("<h3>Shortened URL does not exist.</h3>");
+  } else {
     res.redirect(data.longURL);
-    }
-  });
-  
-app.post("/urls/:id/delete", (req, res) => {
-    const shortURL = req.params.id;
-    delete urlDatabase[shortURL];
-    res.redirect("/urls");
+  }
 });
   
-function getUrlsByUserId(urlDatabase, userId) {
+app.post("/urls/:id/delete", (req, res) => {
+  const user_id = req.cookies["user_id"];
+  const shortURL = req.params.id;
+
+  if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
+    res.status(403).send("<h3>Only the owner of the URL can delete it.</h3>");
+  } else {
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  }
+});
+
+function urlsforUser(urlDatabase, userId) {
   const filteredUrls = {};
-  
+
   for (const shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === userId) {
       filteredUrls[shortURL] = urlDatabase[shortURL];
     }
   }
-  
     return filteredUrls;
 };
 
 function findUser(email, password) { // function for locating user in object
+  
   for (const user_id in users) {
     if (users[user_id].email === email && users[user_id].password === password) {
       return user_id;
