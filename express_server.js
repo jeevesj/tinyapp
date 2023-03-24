@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 var cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
-
+const { getUserByEmail } = require("./helpers.js");
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
@@ -151,7 +151,7 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userInfo = findUser(email); 
+  const userInfo = getUserByEmail(email, users); 
   if (!userInfo) {
     res.status(403).send("Email not found."); // error 403
     return;
@@ -232,14 +232,6 @@ function urlsforUser(urlDatabase, userId) {
     return filteredUrls;
 };
 
-function findUser(email) { 
-  for (const user_id in users) {
-    if (users[user_id].email === email) {
-      return users[user_id];
-    }
-  }
-  return null;
-}
 
 function generateRandomString() { //generate 6 random chars
   let result = '';
