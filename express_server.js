@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 app.use(cookieParser());
 
 
@@ -118,11 +119,12 @@ app.post("/register", (req, res) => {
   const id = generateRandomString(); // generate random string for ID
   const email = req.body.email; // email from form
   const password = req.body.password; // password from form 
+  const hashedPassword = bcrypt.hashSync(password, 10);
   
   const newUser = { // create new user object
     id,
     email,
-    password,
+    password: hashedPassword,
   };
 
   if (!email || !password) { // check if email or password left blank
@@ -145,10 +147,13 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user_id = findUser(email, password); 
-  
-  if (user_id) { // if user_id == true, login the user
-    res.cookie("user_id", user_id);
+  const userInfo = findUser(email); 
+  if (!userInfo) {
+    res.status(403).send("Email not found."); // error 403
+    return;
+  }
+  if (bcrypt.compareSync(password, userInfo.password)) { // if user_id == true, login the user
+    res.cookie("user_id", userInfo.id);
     res.redirect("/urls");
   } else {
     res.status(403).send("Email or password do not match. Please try again."); // error 403
@@ -223,15 +228,15 @@ function urlsforUser(urlDatabase, userId) {
     return filteredUrls;
 };
 
-function findUser(email, password) { // function for locating user in object
-  
+function findUser(email) { 
   for (const user_id in users) {
-    if (users[user_id].email === email && users[user_id].password === password) {
-      return user_id;
+    if (users[user_id].email === email) {
+      return users[user_id];
     }
   }
-  return null; 
+  return null;
 }
+
 
 function generateRandomString() { //generate 6 random chars
   let result = '';
