@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-var cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
 const { getUserByEmail } = require("./helpers.js");
+var cookieSession = require('cookie-session');
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
@@ -11,7 +11,6 @@ app.use(cookieSession({
   name: "cookie-name",
   keys: ['redhot'],
 }));
-
 
 const urlDatabase = {
   b6UTxQ: {
@@ -23,7 +22,6 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
-
 
 const users = {
   userRandomID: {
@@ -38,21 +36,20 @@ const users = {
   },
 };
 
-
 app.get("/", (req, res) => {
-    res.send("Hello!");
+  res.send("Hello!");
 });
 
 app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Example app listening on port ${PORT}!`);
 });
 
 app.get("/urls.json", (req, res) => {
-    res.json(urlDatabase);
+  res.json(urlDatabase);
 });
 
 app.get("/hello", (req, res) => {
-    res.send("<html><body>Hello <b>World</b></body></html>\n");
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.get("/urls", (req, res) => {
@@ -61,21 +58,21 @@ app.get("/urls", (req, res) => {
   if (!user) {
     res.status(401).send("<h3>You must be logged in to view.</h3>");
   } else {
-  const userUrls = urlsforUser(urlDatabase, user_id);
-  const templateVars = { urls: userUrls, user: user };
-  res.render("urls_index", templateVars);
+    const userUrls = urlsforUser(urlDatabase, user_id);
+    const templateVars = { urls: userUrls, user: user };
+    res.render("urls_index", templateVars);
   }
 });
 
 app.get("/hello", (req, res) => {
-    const templateVars = {greeting: "Hello World!"};
-    res.render("hello_world", templateVars);
+  const templateVars = {greeting: "Hello World!"};
+  res.render("hello_world", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const user_id = req.session.user_id;
-  const user = users[user_id];
-  if (!user) { // checks cookie and redirects user to /urls if logged in
+  const user_id = req.session.user_id; // retrieves cookie
+  const user = users[user_id]; // retrieves user from user object
+  if (!user) { // checks cookie and redirects user if not logged in
     res.redirect('/login');
   } else {
     const templateVars = { user: user };
@@ -87,7 +84,7 @@ app.get("/urls/:id/", (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
   const shortURL = req.params.id;
-  if (!user) {
+  if (!user) { // only logged in users can view
     res.status(401).send("<h3>You must be logged in to view</h3>");
   } else if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
     res.status(403).send("<h3>You do not have permission to view</h3>");
@@ -99,12 +96,12 @@ app.get("/urls/:id/", (req, res) => {
 
 app.get('/register', (req, res) => {
   const user_id = req.session.user_id; // Get the user_id from the cookies
-  const user = users[user_id]; 
+  const user = users[user_id];
   if (user_id) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/urls');
   } else {
-  const templateVars = { user: user };
-  res.render('register', templateVars);
+    const templateVars = { user: user };
+    res.render('register', templateVars);
   }
 });
 
@@ -114,16 +111,16 @@ app.get('/login', (req, res) => {
   if (user_id) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/urls');
   } else {
-  const templateVars = { user: user };
-  res.render('login', templateVars);
+    const templateVars = { user: user };
+    res.render('login', templateVars);
   }
 });
 
 
-app.post("/register", (req, res) => { 
+app.post("/register", (req, res) => {
   const id = generateRandomString(); // generate random string for ID
   const email = req.body.email; // email from form
-  const password = req.body.password; // password from form 
+  const password = req.body.password; // password from form
   const hashedPassword = bcrypt.hashSync(password, 10);
   
   const newUser = { // create new user object
@@ -178,10 +175,9 @@ app.post("/urls", (req, res) => {
     res.status(401).send("<h3>You must be logged in to shorten URLs.</h3>");
   } else {
     const shortURL = generateRandomString();
-    const longURL = req.body.longURL;
     urlDatabase[shortURL] = {
-       longURL: req.body.longURL, 
-       userID: user_id 
+      longURL: req.body.longURL,
+      userID: user_id
     };
     res.redirect(`/urls`);
   }
@@ -192,7 +188,7 @@ app.post("/urls/:id/update", (req, res) => {
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
   const user_id = req.session.user_id;
-  
+
   if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
     res.status(403).send("<h3>Only the owner of the URL can edit it.</h3>");
   } else {
@@ -225,7 +221,6 @@ app.post("/urls/:id/delete", (req, res) => {
 
 function urlsforUser(urlDatabase, userId) {
   const filteredUrls = {};
-
   for (const shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === userId) {
       filteredUrls[shortURL] = urlDatabase[shortURL];
@@ -233,7 +228,6 @@ function urlsforUser(urlDatabase, userId) {
   }
     return filteredUrls;
 };
-
 
 function generateRandomString() { //generate 6 random chars
   let result = '';

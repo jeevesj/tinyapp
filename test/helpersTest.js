@@ -20,7 +20,6 @@ describe('getUserByEmail', function() {
     const user = getUserByEmail("user@example.com", testUsers)
     const expectedUserID = "userRandomID";
     const randomEmail = "noone@gmail.com"
-    // Write your assert statement here
     assert.strictEqual(user.id, expectedUserID);
   it('should return undefined when passed an email not in the users database', function() {
       const nonExistentEmail = "blah@example.com";
