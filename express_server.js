@@ -9,9 +9,16 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
 
 const urlDatabase = {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
+
 
 const users = {
   userRandomID: {
@@ -46,9 +53,13 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
-  const templateVars = { urls: urlDatabase, user: user };
-
+  if (!user) {
+    res.status(401).send("<h3>You must be logged in to view.</h3>");
+  } else {
+  const userUrls = getUrlsByUserId(urlDatabase, user_id);
+  const templateVars = { urls: userUrls, user: user };
   res.render("urls_index", templateVars);
+  }
 });
 
 app.get("/hello", (req, res) => {
@@ -59,7 +70,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
-  if (user_id === undefined) { // checks cookie and redirects user to /urls if logged in
+  if (!user) { // checks cookie and redirects user to /urls if logged in
     res.redirect('/login');
   } else {
     const templateVars = { user: user };
@@ -152,7 +163,10 @@ app.post("/urls", (req, res) => {
   } else {
     const shortURL = generateRandomString();
     const longURL = req.body.longURL;
-    urlDatabase[shortURL] = { longURL: longURL, userID: user_id };
+    urlDatabase[shortURL] = {
+       longURL: req.body.longURL, 
+       userID: user_id 
+    };
     res.redirect(`/urls/${shortURL}`);
   }
 });
@@ -163,18 +177,20 @@ app.post("/urls/:id/update", (req, res) => {
   const newLongURL = req.body.newLongURL;
   
   if (urlDatabase[id]) {
-    urlDatabase[id] = newLongURL;
+    urlDatabase[id].longURL = newLongURL;
     res.redirect(`/urls/${id}`); // Redirect to the updated URL's page
+  } else {
+    res.status(404).send("<h3>URL does not exist.</h3>");
   }
 });
 
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-    const longURL = urlDatabase[shortURL]
-    if(!longURL) {
+    const data = urlDatabase[shortURL]
+    if(!data) {
       res.status(404).send("<h3>Shortened URL does not exist.</h3>");
     } else {
-    res.redirect(longURL);
+    res.redirect(data.longURL);
     }
   });
   
@@ -182,22 +198,34 @@ app.post("/urls/:id/delete", (req, res) => {
     const shortURL = req.params.id;
     delete urlDatabase[shortURL];
     res.redirect("/urls");
-  });
+});
   
-function findUser(email, password) { // function for locating user in object
-    for (const user_id in users) {
-      if (users[user_id].email === email && users[user_id].password === password) {
-        return user_id;
-      }
+function getUrlsByUserId(urlDatabase, userId) {
+  const filteredUrls = {};
+  
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === userId) {
+      filteredUrls[shortURL] = urlDatabase[shortURL];
     }
-    return null; 
   }
+  
+    return filteredUrls;
+};
+
+function findUser(email, password) { // function for locating user in object
+  for (const user_id in users) {
+    if (users[user_id].email === email && users[user_id].password === password) {
+      return user_id;
+    }
+  }
+  return null; 
+}
 
 function generateRandomString() { //generate 6 random chars
-    let result = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+  let result = '';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 };
