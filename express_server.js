@@ -86,6 +86,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id/", (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
+  const shortURL = req.params.id;
   if (!user) {
     res.status(401).send("<h3>You must be logged in to view</h3>");
   } else if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
@@ -182,20 +183,21 @@ app.post("/urls", (req, res) => {
        longURL: req.body.longURL, 
        userID: user_id 
     };
-    res.redirect(`/urls/${shortURL}`);
+    res.redirect(`/urls`);
   }
 });
 
 app.post("/urls/:id/update", (req, res) => {
   console.log("Update post request");
-  const id = req.params.id;
+  const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
+  const user_id = req.session.user_id;
   
   if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
     res.status(403).send("<h3>Only the owner of the URL can edit it.</h3>");
   } else {
     urlDatabase[shortURL].longURL = newLongURL;
-    res.redirect(`/urls/${shortURL}`);
+    res.redirect(`/urls`);
   }
 });
 
