@@ -2,7 +2,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
-const { getUserByEmail } = require("./helpers.js");
+const { getUserByEmail, urlsforUser, generateRandomString } = require("./helpers.js");
+
+
+
 var cookieSession = require('cookie-session');
 
 app.set("view engine", "ejs");
@@ -218,22 +221,3 @@ app.post("/urls/:id/delete", (req, res) => {
     res.redirect("/urls");
   }
 });
-
-function urlsforUser(urlDatabase, userId) {
-  const filteredUrls = {};
-  for (const shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === userId) {
-      filteredUrls[shortURL] = urlDatabase[shortURL];
-    }
-  }
-    return filteredUrls;
-};
-
-function generateRandomString() { //generate 6 random chars
-  let result = '';
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
