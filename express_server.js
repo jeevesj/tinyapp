@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const bcrypt = require("bcryptjs");
 const { getUserByEmail, urlsforUser, generateRandomString } = require("./helpers.js");
+const { urlDatabase, users } = require('./database');
 var cookieSession = require('cookie-session');
 
 const PORT = 8080; // default port 8080
@@ -12,30 +13,6 @@ app.use(cookieSession({
   name: "cookie-name",
   keys: ['redhot'],
 }));
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
-
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -134,7 +111,6 @@ app.post("/register", (req, res) => {
   
   
   users[id] = newUser; // add newUser to object
-  console.log(newUser); // print newUser to check
   req.session.user_id = newUser.id; // assign user a cookie
   res.redirect("/urls");  // redirect to url
 });
@@ -177,7 +153,6 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
-  console.log("Update post request");
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
   const user_id = req.session.user_id;
@@ -213,5 +188,5 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Listening on port ${PORT}!`);
 });
