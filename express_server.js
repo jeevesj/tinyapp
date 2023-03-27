@@ -1,12 +1,10 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
 const { getUserByEmail, urlsforUser, generateRandomString } = require("./helpers.js");
-
-
-
 var cookieSession = require('cookie-session');
+
+const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
@@ -43,10 +41,6 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -67,10 +61,10 @@ app.get("/urls", (req, res) => {
   }
 });
 
-app.get("/hello", (req, res) => {
-  const templateVars = {greeting: "Hello World!"};
-  res.render("hello_world", templateVars);
-});
+// app.get("/hello", (req, res) => {
+//   const templateVars = {greeting: "Hello World!"};
+//   res.render("hello_world", templateVars);
+// });
 
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.user_id; // retrieves cookie
@@ -131,18 +125,18 @@ app.post("/register", (req, res) => {
     email,
     password: hashedPassword,
   };
-
+  
   if (!email || !password) { // check if email or password left blank
     res.status(400).send('Email and password are required'); // 400 message
     return;
   }
-  for (const userID in users) { // check if users email exists already
-    if (users[userID].email === email) {
-      res.status(400).send('Email already exists');  // 400 message
-      return;
-    }
+  
+  if (getUserByEmail(email, users) !== null) {
+    res.status(400).send('Email already exists');  // 400 message
+    return;
   }
-
+  
+  
   users[id] = newUser; // add newUser to object
   console.log(newUser); // print newUser to check
   req.session.user_id = newUser.id; // assign user a cookie
@@ -173,7 +167,7 @@ app.post("/logout", (req, res) => {
 app.post("/urls", (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
-
+  
   if (!user) {
     res.status(401).send("<h3>You must be logged in to shorten URLs.</h3>");
   } else {
@@ -191,7 +185,7 @@ app.post("/urls/:id/update", (req, res) => {
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
   const user_id = req.session.user_id;
-
+  
   if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_id) {
     res.status(403).send("<h3>Only the owner of the URL can edit it.</h3>");
   } else {
@@ -209,7 +203,7 @@ app.get("/u/:id", (req, res) => {
     res.redirect(data.longURL);
   }
 });
-  
+
 app.post("/urls/:id/delete", (req, res) => {
   const user_id = req.session.user_id;
   const shortURL = req.params.id;
@@ -220,4 +214,8 @@ app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[shortURL];
     res.redirect("/urls");
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
